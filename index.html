@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Harbor Games</title>
+  <link rel="icon" href="Favicon.ico" />
+  <style>
+    :root {
+      --primary: #007bff;
+      --accent: #4caf50;
+      --bg: linear-gradient(to right, #e0f7fa, #f0f4f8);
+      --text: #333;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    header h1 {
+      font-size: 3rem;
+      color: var(--primary);
+      margin-bottom: 0.3rem;
+    }
+
+    header h2 {
+      font-size: 1.6rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .group-tagline {
+      font-size: 1rem;
+      font-style: italic;
+      color: #666;
+    }
+
+    .container {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+      padding: 2rem;
+      max-width: 700px;
+      width: 100%;
+    }
+
+    .players {
+      display: flex;
+      justify-content: space-around;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .player {
+      flex: 1;
+      background-color: #f9fbff;
+      padding: 1rem;
+      border-radius: 12px;
+      text-align: center;
+    }
+
+    .player input {
+      padding: 0.5rem;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      margin-bottom: 0.5rem;
+      font-weight: bold;
+      width: 100%;
+    }
+
+    .score {
+      font-size: 1.6rem;
+      margin-bottom: 0.3rem;
+    }
+
+    .add-point {
+      background-color: var(--accent);
+      color: white;
+      border: none;
+      padding: 0.4rem 0.8rem;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .wheel-section {
+      text-align: center;
+      margin-top: 2rem;
+      position: relative;
+    }
+
+    .pointer {
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 12px solid transparent;
+      border-right: 12px solid transparent;
+      border-bottom: 20px solid red;
+      z-index: 10;
+    }
+
+    .spin-button {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      padding: 0.7rem 1.5rem;
+      font-size: 1.2rem;
+      border-radius: 8px;
+      margin: 0.5rem;
+      cursor: pointer;
+    }
+
+    .result, .winner {
+      margin-top: 1rem;
+      font-size: 1.3rem;
+      font-weight: bold;
+    }
+
+    .winner {
+      color: var(--accent);
+      font-size: 1.5rem;
+    }
+
+    svg {
+      transition: transform 3s ease-out;
+    }
+
+    .segment-text {
+      font-size: 12px;
+      fill: white;
+      text-anchor: middle;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🌊 Harbor Games 🌊</h1>
+    <h2>Trick Shot Challenge</h2>
+    <p class="group-tagline">Created for the Harbor Homeschool Group</p>
+  </header>
+
+  <div class="container">
+    <div class="players">
+      <div class="player">
+        <input id="player1" type="text" placeholder="Player 1" />
+        <div class="score" id="score1">0</div>
+        <button class="add-point" onclick="addPoint(1)">+1</button>
+      </div>
+      <div class="player">
+        <input id="player2" type="text" placeholder="Player 2" />
+        <div class="score" id="score2">0</div>
+        <button class="add-point" onclick="addPoint(2)">+1</button>
+      </div>
+      <div class="player">
+        <input id="player3" type="text" placeholder="Player 3" />
+        <div class="score" id="score3">0</div>
+        <button class="add-point" onclick="addPoint(3)">+1</button>
+      </div>
+    </div>
+    <div class="wheel-section">
+      <div class="pointer"></div>
+      <svg id="wheel" width="320" height="320" viewBox="0 0 320 320">
+        <defs>
+          <circle id="textPathCircle" cx="160" cy="160" r="110" />
+        </defs>
+      </svg>
+      <button class="spin-button" onclick="spinWheel()">🎡 Spin the Wheel!</button>
+      <button class="spin-button" onclick="resetGame()">🔄 Reset Game</button>
+      <div class="result" id="resultText">Get ready to spin!</div>
+      <div class="winner" id="winnerText"></div>
+    </div>
+  </div>
+
+  <script>
+    let challenges = [
+      "Tunnel Shot",
+      "Laser Drop",
+      "Ricochet",
+      "Mystery Box Shot",
+      "Gap Shot",
+      "Spin Shot"
+    ];
+
+    const segmentColors = [
+      "#f44336", "#ff9800", "#ffeb3b", "#4caf50", "#2196f3", "#9c27b0"
+    ];
+
+    let scores = [0, 0, 0];
+    let spinning = false;
+    let totalRotation = 0;
+    const wheel = document.getElementById("wheel");
+
+    function renderWheel() {
+      wheel.innerHTML = '<defs><circle id="textPathCircle" cx="160" cy="160" r="110" /></defs>';
+      const centerX = 160, centerY = 160, radius = 150;
+      const angleStep = 2 * Math.PI / challenges.length;
+
+      challenges.forEach((label, i) => {
+        const startAngle = i * angleStep;
+        const endAngle = startAngle + angleStep;
+        const x1 = centerX + radius * Math.cos(startAngle);
+        const y1 = centerY + radius * Math.sin(startAngle);
+        const x2 = centerX + radius * Math.cos(endAngle);
+        const y2 = centerY + radius * Math.sin(endAngle);
+
+        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        const largeArc = angleStep > Math.PI ? 1 : 0;
+        const d = `M${centerX},${centerY} L${x1},${y1} A${radius},${radius} 0 ${largeArc},1 ${x2},${y2} Z`;
+        path.setAttribute("d", d);
+        path.setAttribute("fill", segmentColors[i % segmentColors.length]);
+        wheel.appendChild(path);
+
+        const textPathId = `textPath${i}`;
+        const arcStart = startAngle + angleStep * 0.1;
+        const arcEnd = startAngle + angleStep * 0.9;
+        const ax1 = centerX + 110 * Math.cos(arcStart);
+        const ay1 = centerY + 110 * Math.sin(arcStart);
+        const ax2 = centerX + 110 * Math.cos(arcEnd);
+        const ay2 = centerY + 110 * Math.sin(arcEnd);
+        const arcD = `M${ax1},${ay1} A110,110 0 0,1 ${ax2},${ay2}`;
+        const arc = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        arc.setAttribute("d", arcD);
+        arc.setAttribute("id", textPathId);
+        wheel.appendChild(arc);
+
+        const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        text.setAttribute("class", "segment-text");
+        const textPath = document.createElementNS("http://www.w3.org/2000/svg", "textPath");
+        textPath.setAttributeNS("http://www.w3.org/1999/xlink", "xlink:href", `#${textPathId}`);
+        textPath.setAttribute("startOffset", "50%");
+        textPath.textContent = label;
+        text.appendChild(textPath);
+        wheel.appendChild(text);
+      });
+    }
+
+    function spinWheel() {
+      if (spinning || challenges.length === 0) return;
+      spinning = true;
+
+      const index = Math.floor(Math.random() * challenges.length);
+      const selected = challenges[index];
+      const segmentAngle = 360 / challenges.length;
+      totalRotation += 360 * 50 + segmentAngle * index;//Change the number after 360 *  to change speed. higher is faster.
+
+      wheel.style.transform = `rotate(${totalRotation}deg)`;
+
+      setTimeout(() => {
+        document.getElementById("resultText").innerText = "Challenge: " + selected;
+        challenges.splice(index, 1);
+        renderWheel();
+        if (challenges.length === 0) declareWinner();
+        spinning = false;
+      }, 3200);
+    }
+
+    function addPoint(playerIndex) {
+      scores[playerIndex - 1]++;
+      document.getElementById(`score${playerIndex}`).innerText = scores[playerIndex - 1];
+    }
+
+    function declareWinner() {
+      const max = Math.max(...scores);
+      const winnerIndex = scores.indexOf(max);
+      const name = document.getElementById(`player${winnerIndex + 1}`).value || `Player ${winnerIndex + 1}`;
+      document.getElementById("winnerText").innerText = `🏆 ${name} wins with ${max} points!`;
+    }
+
+    function resetGame() {
+      scores = [0, 0, 0];
+      totalRotation = 0;
+      for (let i = 1; i <= 3; i++) {
+        document.getElementById(`score${i}`).innerText = "0";
+        document.getElementById(`player${i}`).value = "";
+      }
+      challenges = [
+        "Tunnel Shot",
+        "Laser Drop",
+        "Ricochet",
+        "Mystery Box Shot",
+        "Gap Shot",
+        "Spin Shot"
+      ];
+      wheel.style.transform = "rotate(0deg)";
+      document.getElementById("resultText").innerText = "Get ready to spin!";
+      document.getElementById("winnerText").innerText = "";
+      renderWheel();
+    }
+
+    renderWheel();
+  </script>
+</body>
+</html>
