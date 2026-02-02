@@ -177,8 +177,8 @@
           <circle id="textPathCircle" cx="160" cy="160" r="110" />
         </defs>
       </svg>
-      <button class="spin-button" onclick="spinWheel()">🎡 Spin the Wheel!</button>
-      <button class="spin-button" onclick="resetGame()">🔄 Reset Game</button>
+      <button class="spin-button" onclick="spinWheel()">Spin the Wheel!</button>
+      <button class="spin-button" onclick="resetGame()">Reset Game</button>
       <div class="result" id="resultText">Get ready to spin!</div>
       <div class="winner" id="winnerText"></div>
     </div>
@@ -276,7 +276,7 @@
       const max = Math.max(...scores);
       const winnerIndex = scores.indexOf(max);
       const name = document.getElementById(`player${winnerIndex + 1}`).value || `Player ${winnerIndex + 1}`;
-      document.getElementById("winnerText").innerText = `🏆 ${name} wins with ${max} points!`;
+      document.getElementById("winnerText").innerText = `${name} wins with ${max} points!`;
     }
 
     function resetGame() {
@@ -287,12 +287,26 @@
         document.getElementById(`player${i}`).value = "";
       }
       challenges = [
-        "Tunnel Shot",
-        "Laser Drop",
-        "Ricochet",
-        "Mystery Box Shot",
-        "Gap Shot",
-        "Spin Shot"
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15",
+        "16",
+        "17",
+        "18",
+        "19",
+        "20"
       ];
       wheel.style.transform = "rotate(0deg)";
       document.getElementById("resultText").innerText = "Get ready to spin!";
